@@ -1,0 +1,3 @@
+local ClientBag = {}
+
+return ClientBag
