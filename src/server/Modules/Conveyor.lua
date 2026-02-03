@@ -19,6 +19,16 @@ function Conveyor.new(part: BasePart, speed: number, target: Types.Container): T
 	return setmetatable(self, Conveyor) :: any
 end
 
+function Conveyor.changeSpeed(self: Types.Conveyor, newSpeed: number)
+	local oldSpeed = self.Speed
+	self.Speed = newSpeed
+
+	for _, bag in self.Bags do
+		bag.StudsTraversed = Math.TraversedCalculation(bag.LastUpdate, oldSpeed)
+		bag.LastUpdate = tick()
+	end
+end
+
 function Conveyor.add(self: Types.Conveyor, bag: Types.Bag)
 	if bag.Container then
 		error("Add bag cannot add a bag that already has a container... Please move the bag instead.")
