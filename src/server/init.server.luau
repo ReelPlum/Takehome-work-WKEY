@@ -8,7 +8,9 @@ local Types = require("./server/Types")
 local mainStockpile = Container.new(Workspace.Stockpile)
 local mainConveyor = Conveyor.new(workspace.Conveyor, 10, mainStockpile)
 
---Gets sync data used for getting a client up to date
+--Tell the clients that mainConveyor & mainStockpile has been created
+
+--Gets sync data used for getting a client up to date when they join
 local function getSyncData(): { ["Conveyor"]: Types.SerializedConveyor, ["Stockpile"]: Types.SerializedContainer }
 	return {
 		Conveyor = mainConveyor:serialize(),
