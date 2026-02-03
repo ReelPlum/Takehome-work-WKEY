@@ -9,9 +9,4 @@ function module.TimeRemaining(conveyor: Types.Conveyor, traversedStuds: number):
 	return remainingDistance / conveyor.Speed
 end
 
---Calculate how far the bag has travelled since last update
-function module.TraversedCalculation(lastUpdate: number, speed: number): number
-	return (tick() - lastUpdate) * speed
-end
-
 return module
