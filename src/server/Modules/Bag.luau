@@ -12,13 +12,29 @@ function Bag.new(brickColor: BrickColor?, material: Enum.Material?): Types.Bag
 		Material = material or Enum.Material:GetEnumItems()[math.random(1, #Enum.Material:GetEnumItems())], --either use selected material or a random material
 		StudsTraversed = 0,
 		LastUpdate = tick(),
-		Target = "End", --If support for other POI was added, then we'd add a check for closest POI here
 		Container = nil,
 	}
 
 	return setmetatable(self, Bag) :: any
 end
 
-function Bag.move(self: Types.Bag, newContainer: Types.Container) end
+function Bag.move(self: Types.Bag, newContainer: Types.Container)
+	if not self.Container then
+		error("Cannot move a bag that is not assigned to a container already")
+	end
+
+	self.Container:removeBag(self)
+	newContainer:addBag(self)
+end
+
+function Bag.serialize(self: Types.Bag): Types.SerializedBag
+	return {
+		Id = self.Id,
+		Color = self.Color,
+		Material = self.Material,
+		StudsTraversed = self.StudsTraversed,
+		Container = if self.Container then self.Container:serialize() else nil,
+	}
+end
 
 return Bag
