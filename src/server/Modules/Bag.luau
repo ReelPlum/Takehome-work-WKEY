@@ -33,7 +33,6 @@ function Bag.serialize(self: Types.Bag): Types.SerializedBag
 		Color = self.Color,
 		Material = self.Material,
 		StudsTraversed = self.StudsTraversed,
-		Container = if self.Container then self.Container:serialize() else nil,
 	}
 end
 

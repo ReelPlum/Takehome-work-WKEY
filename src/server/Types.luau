@@ -31,12 +31,13 @@ export type SerializedBag = {
 	Color: BrickColor,
 	Material: Enum.Material,
 	StudsTraversed: number,
-	Container: SerializedContainer?,
 }
 
 export type SerializedContainer = {
 	Type: string,
 	Id: string,
+	Bags: { SerializedBag },
+	Part: BasePart,
 }
 
 export type SerializedConveyor = {

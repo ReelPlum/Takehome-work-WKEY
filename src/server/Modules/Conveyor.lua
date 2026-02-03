@@ -64,11 +64,20 @@ function Conveyor.update(self: Types.Conveyor)
 end
 
 function Conveyor.serialize(self: Types.Conveyor): Types.SerializedConveyor
+	local bags = {}
+	for _, bag in self.Bags do
+		table.insert(bags, bag:serialize())
+	end
+
 	return {
 		Speed = self.Speed,
 		Target = self.Target:serialize(),
 		Type = "Conveyor",
 		Id = self.Id,
 		POI = {},
+		Bags = bags,
+		Part = self.Part,
 	}
 end
+
+return Conveyor

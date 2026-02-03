@@ -40,9 +40,16 @@ function Container.removeBag(self: Types.Container, bag: Types.Bag)
 end
 
 function Container.serialze(self: Types.Container): Types.SerializedContainer
+	local bags = {}
+	for _, bag in self.Bags do
+		table.insert(bags, bag:serialize())
+	end
+
 	return {
 		Id = self.Id,
 		Type = "Container",
+		Bags = bags,
+		Part = self.Part,
 	}
 end
 
