@@ -2,6 +2,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 local Types = require(script.Parent.Parent.Types)
 
+local Events = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events")
+
 local ClientBag = {}
 ClientBag.__index = ClientBag
 
@@ -19,6 +21,14 @@ function ClientBag.new(
 	Part.BrickColor = color
 	Part.Material = material
 	Part.Name = id
+
+	local ClickDetector = Instance.new("ClickDetector")
+	ClickDetector.Parent = Part
+	ClickDetector.MouseClick:Connect(function()
+		Events:WaitForChild("PrintID"):FireServer(id)
+
+		warn("Clicked a bag on client: " .. id)
+	end)
 
 	if container then
 		Part.Parent = Workspace

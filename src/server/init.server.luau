@@ -52,6 +52,10 @@ RunService.Heartbeat:Connect(function(a0: number)
 	mainConveyor:update()
 end)
 
+Events:WaitForChild("PrintID").OnServerEvent:Connect(function(a0: Player, id)
+	warn("A bag was clicked with the id " .. id)
+end)
+
 Events:WaitForChild("Ready").OnServerEvent:Connect(function(player: Player)
 	warn(player)
 	Events:WaitForChild("Sync"):FireClient(player, getSyncData(), gameOwner.UserId)
