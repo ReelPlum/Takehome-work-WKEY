@@ -1,4 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 local Types = require(script.Parent.Parent.Types)
 local ClientBag = require(script.Parent.ClientBag)
 
@@ -41,7 +43,44 @@ function ClientContainer.addBag(self: Types.ClientContainer, bag: Types.ClientBa
 	table.insert(self.Bags, bag)
 	bag.Container = self
 
-	bag.Part.CFrame = self:getBagPosition(bag)
+	local wasInitialized = bag.Initialized
+	bag.Initialized = true
+
+	if not wasInitialized then
+		bag.Part.CFrame = self:getBagPosition(bag)
+	else
+		--Animation!
+		--bag.Part.CFrame = self:getBagPosition(bag)
+
+		local cf = self:getBagPosition(bag)
+		local target = cf.Position
+		local targetDirection = cf.lookVector
+		local currentDirection = bag.Part.CFrame.lookVector
+		--Bezier curve
+
+		local p0 = bag.Part.CFrame.Position
+		local p1 = p0:lerp(target, 0.5)
+			+ Vector3.new(math.random(-1500, 1500) / 100, math.random(100, 1500) / 100, math.random(-1500, 1500) / 100)
+
+		local conn = nil
+		local start = tick()
+		local tweenTime = 1.25
+
+		conn = RunService.RenderStepped:Connect(function(dt: number)
+			local i = (tick() - start) / tweenTime
+			local t = TweenService:GetValue(i, Enum.EasingStyle.Back, Enum.EasingDirection.InOut)
+
+			bag.Part.CFrame = CFrame.lookAlong(
+				(1 - t) ^ 2 * p0 + 2 * (1 - t) * t * p1 + t ^ 2 * target,
+				currentDirection:lerp(targetDirection, t)
+			)
+
+			if i >= 1 then
+				bag.Part.CFrame = cf
+				conn:Disconnect()
+			end
+		end)
+	end
 end
 
 function ClientContainer.removeBag(self: Types.ClientContainer, bag: Types.ClientBag)

@@ -13,8 +13,16 @@ export type ClientBag = {
 	Material: Enum.Material,
 	StudsTraversed: number,
 	Part: BasePart,
+	Initialized: boolean,
 	Container: ClientContainer?,
 	move: (self: ClientBag, container: ClientContainer) -> nil,
+
+	OriginalSize: Vector3,
+	OriginalTransparency: number,
+
+	RotationOffset: number,
+	Transparency: number,
+	SizeOffset: number,
 }
 
 export type ClientContainer = {

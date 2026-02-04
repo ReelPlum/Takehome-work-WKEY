@@ -31,9 +31,12 @@ function ClientConveyor.new(
 			serializedBag.StudsTraversed,
 			self
 		)
-		table.insert(self.Bags, createdBag)
 
-		--Position bag
+		table.insert(self.Bags, createdBag)
+		createdBag.Container = self
+
+		createdBag.Initialized = true
+
 		createdBag.Part.CFrame = self:getBagPosition(createdBag)
 	end
 
@@ -46,11 +49,24 @@ function ClientConveyor.addBag(self: Types.ClientConveyor, bag: Types.ClientBag)
 	end
 
 	bag.StudsTraversed = 0
-	bag.Part.CFrame = self:getBagPosition(bag)
 	bag.Part.Parent = workspace
 
 	table.insert(self.Bags, bag)
 	bag.Container = self
+
+	local wasInitialized = bag.Initialized
+	bag.Initialized = true
+
+	if wasInitialized then
+		bag.Part.CFrame = self:getBagPosition(bag)
+	else
+		--Animation!
+		warn("ANIM!")
+		bag.Part.CFrame = self:getBagPosition(bag)
+		bag.SizeOffset = math.random(100, 400) / 100
+		bag.Transparency = 1
+		bag.RotationOffset = math.random(-6500, 6500) / 100
+	end
 end
 
 function ClientConveyor.removeBag(self: Types.ClientConveyor, bag: Types.ClientBag)
@@ -84,7 +100,14 @@ function ClientConveyor.update(self: Types.ClientConveyor, dt: number)
 			continue
 		end
 
-		bag.Part.CFrame = self:getBagPosition(bag)
+		bag.Part.CFrame = self:getBagPosition(bag) * CFrame.Angles(0, math.rad(bag.RotationOffset), 0)
+
+		bag.Part.Size = bag.OriginalSize + Vector3.new(bag.SizeOffset, bag.SizeOffset, bag.SizeOffset)
+		bag.Part.Transparency = bag.Transparency
+
+		bag.Transparency = bag.Transparency + (bag.OriginalTransparency - bag.Transparency) * (5 * dt)
+		bag.SizeOffset = bag.SizeOffset + -bag.SizeOffset * (5 * dt)
+		bag.RotationOffset = bag.RotationOffset + -bag.RotationOffset * (5 * dt)
 	end
 end
 

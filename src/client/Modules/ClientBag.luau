@@ -32,6 +32,14 @@ function ClientBag.new(
 		StudsTraversed = studsTraversed or 0,
 		Container = nil,
 		Part = Part, --Memory management I'd use something like Maid or Janitor to destroy this part when the bag was cleaned up.
+		Initialized = false,
+
+		OriginalSize = Part.Size,
+		OriginalTransparency = Part.Transparency,
+
+		RotationOffset = 0,
+		Transparency = 0,
+		SizeOffset = 0,
 	}, ClientBag)
 
 	if container then

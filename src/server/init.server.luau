@@ -1,3 +1,4 @@
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -8,6 +9,7 @@ local Types = require(script.Types)
 
 local mainStockpile = Container.new(Workspace.Stockpile)
 local mainConveyor = Conveyor.new(workspace.Conveyor, 25, mainStockpile)
+local gameOwner = nil
 
 --Tell the clients that mainConveyor & mainStockpile has been created
 
@@ -39,5 +41,29 @@ RunService.Heartbeat:Connect(function(a0: number)
 end)
 
 Events:WaitForChild("Ready").OnServerEvent:Connect(function(player: Player)
-	Events:WaitForChild("Sync"):FireClient(player, getSyncData())
+	Events:WaitForChild("Sync"):FireClient(player, getSyncData(), gameOwner == player)
+end)
+
+local function SetGameOwner(player: Player)
+	if gameOwner then
+		return
+	end
+	gameOwner = player
+	Events:WaitForChild("SetGameOwner"):FireAllClients(player.UserId)
+end
+
+--Check if a player is already in game
+if Players:GetPlayers()[1] then
+	SetGameOwner(Players:GetPlayers()[1])
+end
+
+Players.PlayerAdded:Connect(SetGameOwner)
+Players.PlayerRemoving:Connect(function(player: Player)
+	if gameOwner == player then
+		gameOwner = nil
+	end
+
+	if Players:GetPlayers()[1] then
+		SetGameOwner(Players:GetPlayers()[1])
+	end
 end)
