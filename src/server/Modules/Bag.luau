@@ -1,6 +1,6 @@
 local HttpService = game:GetService("HttpService")
 
-local Types = require("../Types")
+local Types = require(script.Parent.Parent.Types)
 
 local Bag = {}
 Bag.__index = Bag
@@ -33,6 +33,7 @@ function Bag.serialize(self: Types.Bag): Types.SerializedBag
 		Color = self.Color,
 		Material = self.Material,
 		StudsTraversed = self.StudsTraversed,
+		ContainerId = if self.Container then self.Container.Id else nil,
 	}
 end
 
