@@ -54,6 +54,9 @@ function ClientBag.new(
 	}, ClientBag)
 
 	if container then
+		if self.StudsTraversed > 0 then
+			self.Initialized = true
+		end
 		container:addBag(self)
 	end
 

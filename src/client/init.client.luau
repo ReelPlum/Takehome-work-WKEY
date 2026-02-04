@@ -114,5 +114,5 @@ end)
 repeat
 	task.wait()
 until game:IsLoaded()
-task.wait(0.25)
+task.wait(1)
 Events:WaitForChild("Ready"):FireServer()
