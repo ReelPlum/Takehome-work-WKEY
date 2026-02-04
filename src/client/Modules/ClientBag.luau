@@ -54,7 +54,6 @@ function ClientBag.new(
 	}, ClientBag)
 
 	if container then
-		self.Initialized = true
 		container:addBag(self)
 	end
 
