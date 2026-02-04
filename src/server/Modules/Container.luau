@@ -1,5 +1,5 @@
 local HttpService = game:GetService("HttpService")
-local Types = require("../Types")
+local Types = require(script.Parent.Parent.Types)
 
 local Container = {}
 Container.__index = Container
@@ -10,6 +10,8 @@ function Container.new(part: BasePart): Types.Container
 		Bags = {},
 		Part = part,
 	}
+
+	part.Name = self.Id
 
 	return setmetatable(self, Container) :: any
 end
@@ -39,7 +41,7 @@ function Container.removeBag(self: Types.Container, bag: Types.Bag)
 	table.remove(self.Bags, i)
 end
 
-function Container.serialze(self: Types.Container): Types.SerializedContainer
+function Container.serialize(self: Types.Container): Types.SerializedContainer
 	local bags = {}
 	for _, bag in self.Bags do
 		table.insert(bags, bag:serialize())
@@ -49,7 +51,6 @@ function Container.serialze(self: Types.Container): Types.SerializedContainer
 		Id = self.Id,
 		Type = "Container",
 		Bags = bags,
-		Part = self.Part,
 	}
 end
 
