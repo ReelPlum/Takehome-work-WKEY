@@ -31,19 +31,19 @@ export type SerializedBag = {
 	Color: BrickColor,
 	Material: Enum.Material,
 	StudsTraversed: number,
+	ContainerId: string,
 }
 
 export type SerializedContainer = {
 	Type: string,
 	Id: string,
 	Bags: { SerializedBag },
-	Part: BasePart,
 }
 
 export type SerializedConveyor = {
 	Speed: number,
 	POI: { [string]: number },
-	Target: SerializedContainer,
+	TargetId: string,
 } & SerializedContainer
 
 return {}
