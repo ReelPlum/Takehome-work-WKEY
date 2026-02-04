@@ -3,7 +3,9 @@ export type Conveyor = {
 	POI: { [string]: number },
 	BagEvents: { [Bag]: number },
 	Target: Container,
+	changeSpeed: (self: Conveyor, speed: number) -> nil,
 	serialize: (self: Conveyor) -> SerializedConveyor,
+	update: (self: Conveyor) -> nil,
 } & Container
 
 export type Bag = {

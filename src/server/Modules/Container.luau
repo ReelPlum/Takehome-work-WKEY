@@ -1,6 +1,14 @@
 local HttpService = game:GetService("HttpService")
 local Types = require(script.Parent.Parent.Types)
 
+local function FindBagFromId(bags, id)
+	for i, v in bags do
+		if v.Id == id then
+			return i
+		end
+	end
+end
+
 local Container = {}
 Container.__index = Container
 
@@ -34,7 +42,9 @@ function Container.removeBag(self: Types.Container, bag: Types.Bag)
 		error("Cannot remove bags from other containers")
 	end
 
-	local i = table.find(self.Bags, bag)
+	bag.Container = nil
+
+	local i = FindBagFromId(self.Bags, bag.Id)
 	if not i then
 		error("The bag was for some reason already removed from the bag table..")
 	end
@@ -46,6 +56,8 @@ function Container.serialize(self: Types.Container): Types.SerializedContainer
 	for _, bag in self.Bags do
 		table.insert(bags, bag:serialize())
 	end
+
+	--warn(bags)
 
 	return {
 		Id = self.Id,

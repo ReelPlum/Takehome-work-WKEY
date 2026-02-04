@@ -5,12 +5,20 @@ local ClientBag = require(script.Parent.ClientBag)
 local ClientConveyor = {}
 ClientConveyor.__index = ClientConveyor
 
+local function FindBagFromId(bags, id)
+	for i, v in bags do
+		if v.Id == id then
+			return i
+		end
+	end
+end
+
 function ClientConveyor.new(
 	id: string,
 	part: BasePart,
 	target: Types.ClientContainer,
 	speed: number,
-	bags: { Types.SerializedBag }
+	bags: { Types.SerializedBag }?
 ): Types.ClientContainer
 	local self = setmetatable({
 		Id = id,
@@ -23,24 +31,23 @@ function ClientConveyor.new(
 		Speed = speed,
 	}, ClientConveyor)
 
-	for _, serializedBag in bags do
-		local createdBag = ClientBag.new(
-			serializedBag.Id,
-			serializedBag.Color,
-			serializedBag.Material,
-			serializedBag.StudsTraversed,
-			self
-		)
-
-		table.insert(self.Bags, createdBag)
-		createdBag.Container = self
-
-		createdBag.Initialized = true
-
-		createdBag.Part.CFrame = self:getBagPosition(createdBag)
-	end
+	self:loadBags(bags)
 
 	return self :: any
+end
+
+function ClientConveyor.loadBags(self: Types.ClientConveyor, bags: { Types.SerializedBag })
+	if not bags then
+		return
+	end
+
+	for _, serializedBag in bags do
+		if FindBagFromId(self.Bags, serializedBag.Id) then
+			continue
+		end
+
+		ClientBag.new(serializedBag.Id, serializedBag.Color, serializedBag.Material, serializedBag.StudsTraversed, self)
+	end
 end
 
 function ClientConveyor.addBag(self: Types.ClientConveyor, bag: Types.ClientBag)
@@ -48,7 +55,10 @@ function ClientConveyor.addBag(self: Types.ClientConveyor, bag: Types.ClientBag)
 		error("Cannot add a bag that already has a container")
 	end
 
-	bag.StudsTraversed = 0
+	if FindBagFromId(self.Bags, bag.Id) then
+		return
+	end
+
 	bag.Part.Parent = workspace
 
 	table.insert(self.Bags, bag)
@@ -61,7 +71,6 @@ function ClientConveyor.addBag(self: Types.ClientConveyor, bag: Types.ClientBag)
 		bag.Part.CFrame = self:getBagPosition(bag)
 	else
 		--Animation!
-		warn("ANIM!")
 		bag.Part.CFrame = self:getBagPosition(bag)
 		bag.SizeOffset = math.random(100, 400) / 100
 		bag.Transparency = 1
@@ -78,9 +87,10 @@ function ClientConveyor.removeBag(self: Types.ClientConveyor, bag: Types.ClientB
 		error("Cannot remove a bag that has another container")
 	end
 
-	local i = table.find(self.Bags, bag)
+	local i = FindBagFromId(self.Bags, bag.Id)
 	bag.Container = nil
 	bag.Part.Parent = ReplicatedStorage
+	bag.StudsTraversed = 0
 
 	if i then
 		table.remove(self.Bags, i)

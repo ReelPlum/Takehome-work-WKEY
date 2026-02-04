@@ -7,7 +7,15 @@ local ClientBag = require(script.Parent.ClientBag)
 local ClientContainer = {}
 ClientContainer.__index = ClientContainer
 
-function ClientContainer.new(id: string, part: BasePart, bags: { Types.SerializedBag }): Types.ClientContainer
+local function FindBagFromId(bags, id)
+	for i, v in bags do
+		if v.Id == id then
+			return i
+		end
+	end
+end
+
+function ClientContainer.new(id: string, part: BasePart, bags: { Types.SerializedBag }?): Types.ClientContainer
 	local self = setmetatable({
 		Id = id,
 		Part = part,
@@ -15,21 +23,24 @@ function ClientContainer.new(id: string, part: BasePart, bags: { Types.Serialize
 		Origin = part.CFrame * CFrame.new(0, part.Size.Y / 2, 0),
 	}, ClientContainer)
 
-	for _, serializedBag in bags do
-		local createdBag = ClientBag.new(
-			serializedBag.Id,
-			serializedBag.Color,
-			serializedBag.Material,
-			serializedBag.StudsTraversed,
-			self
-		)
-		table.insert(self.Bags, createdBag)
-
-		--Position bag
-		createdBag.Part.CFrame = self:getBagPosition(createdBag)
-	end
+	self:loadBags(bags)
 
 	return self :: any
+end
+
+function ClientContainer.loadBags(self: Types.ClientContainer, bags: { Types.SerializedBag })
+	if not bags then
+		return
+	end
+
+	warn(bags)
+	for _, serializedBag in bags do
+		if FindBagFromId(self.Bags, serializedBag.Id) then
+			continue
+		end
+		ClientBag.new(serializedBag.Id, serializedBag.Color, serializedBag.Material, serializedBag.StudsTraversed, self)
+	end
+	warn(self.Bags)
 end
 
 function ClientContainer.addBag(self: Types.ClientContainer, bag: Types.ClientBag)
@@ -37,10 +48,14 @@ function ClientContainer.addBag(self: Types.ClientContainer, bag: Types.ClientBa
 		error("Cannot add a bag that already has a container")
 	end
 
-	bag.StudsTraversed = 0
-	bag.Part.Parent = workspace
+	if FindBagFromId(self.Bags, bag.Id) then
+		return
+	end
 
 	table.insert(self.Bags, bag)
+
+	bag.Part.Parent = workspace
+
 	bag.Container = self
 
 	local wasInitialized = bag.Initialized
@@ -92,7 +107,7 @@ function ClientContainer.removeBag(self: Types.ClientContainer, bag: Types.Clien
 		error("Cannot remove a bag that has another container")
 	end
 
-	local i = table.find(self.Bags, bag)
+	local i = FindBagFromId(self.Bags, bag.Id)
 	bag.Container = nil
 	bag.Part.Parent = ReplicatedStorage
 
@@ -108,7 +123,7 @@ function ClientContainer.removeBag(self: Types.ClientContainer, bag: Types.Clien
 end
 
 function ClientContainer.getBagPosition(self: Types.ClientContainer, bag: Types.ClientBag): CFrame
-	local i = table.find(self.Bags, bag)
+	local i = FindBagFromId(self.Bags, bag.Id)
 
 	--I could also make it automatically detect how many rows & columns there could be to fit bags, but I'm just gonna hardcode it lol
 	local rows = 5

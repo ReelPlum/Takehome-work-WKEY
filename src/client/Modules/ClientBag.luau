@@ -14,10 +14,11 @@ function ClientBag.new(
 ): Types.ClientBag
 	local Part = Instance.new("Part")
 	Part.Size = Vector3.new(3, 1, 4)
-	Part.CanCollide = false
 	Part.Anchored = true
+	Part.CanCollide = false
 	Part.BrickColor = color
 	Part.Material = material
+	Part.Name = id
 
 	if container then
 		Part.Parent = Workspace
@@ -43,6 +44,7 @@ function ClientBag.new(
 	}, ClientBag)
 
 	if container then
+		self.Initialized = true
 		container:addBag(self)
 	end
 

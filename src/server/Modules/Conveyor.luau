@@ -1,6 +1,17 @@
 local HttpService = game:GetService("HttpService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Types = require(script.Parent.Parent.Types)
 local Math = require(script.Parent.Parent.Math)
+
+local Events = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events")
+
+local function FindBagFromId(bags, id)
+	for i, v in bags do
+		if v.Id == id then
+			return i
+		end
+	end
+end
 
 local Conveyor = {}
 Conveyor.__index = Conveyor
@@ -25,6 +36,8 @@ function Conveyor.changeSpeed(self: Types.Conveyor, newSpeed: number)
 	local oldSpeed = self.Speed
 	self.Speed = newSpeed
 
+	Events:WaitForChild("SetConveyorSpeed"):FireAllClients(self.Id, self.Speed)
+
 	for _, bag in self.Bags do
 		bag.StudsTraversed = Math.TraversedCalculation(bag.LastUpdate, oldSpeed)
 		bag.LastUpdate = tick()
@@ -38,12 +51,15 @@ function Conveyor.addBag(self: Types.Conveyor, bag: Types.Bag)
 
 	bag.Container = self
 	table.insert(self.Bags, bag)
+	--warn(self.Bags)
 
 	bag.StudsTraversed = 0
 	bag.LastUpdate = tick()
 
 	--Update this function IF POI are added
 	self.BagEvents[bag] = tick() + Math.TimeRemaining(self, bag.StudsTraversed)
+
+	--print(self:serialize())
 end
 
 function Conveyor.removeBag(self: Types.Conveyor, bag: Types.Bag)
@@ -56,8 +72,9 @@ function Conveyor.removeBag(self: Types.Conveyor, bag: Types.Bag)
 	end
 
 	self.BagEvents[bag] = nil
+	bag.Container = nil
 
-	local i = table.find(self.Bags, bag)
+	local i = FindBagFromId(self.Bags, bag.Id)
 	if not i then
 		error("The bag was for some reason already removed from the bag table..")
 	end
@@ -66,7 +83,7 @@ end
 
 function Conveyor.update(self: Types.Conveyor)
 	for bag, t in self.BagEvents do
-		if tick() <= t then
+		if tick() >= t then
 			--Reached destination
 			--Update this to handle POI if they are ever added
 
@@ -76,6 +93,11 @@ function Conveyor.update(self: Types.Conveyor)
 end
 
 function Conveyor.serialize(self: Types.Conveyor): Types.SerializedConveyor
+	for _, bag in self.Bags do
+		bag.StudsTraversed += Math.TraversedCalculation(bag.LastUpdate, self.Speed)
+		bag.LastUpdate = tick()
+	end
+
 	local bags = {}
 	for _, bag in self.Bags do
 		table.insert(bags, bag:serialize())

@@ -33,6 +33,7 @@ export type ClientContainer = {
 	addBag: (self: ClientContainer, bag: ClientBag) -> nil,
 	removeBag: (self: ClientContainer, bag: ClientBag) -> nil,
 	getBagPosition: (self: ClientContainer, bag: ClientBag) -> CFrame,
+	loadBags: (self: ClientContainer, bags: { SerializedBag }) -> nil,
 }
 
 --I would move these into a shared file for server & client if it was a production program

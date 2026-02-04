@@ -1,3 +1,5 @@
+local CollectionService = game:GetService("CollectionService")
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
@@ -17,19 +19,42 @@ RunService.RenderStepped:Connect(function(dt: number)
 	end
 end)
 
+local function SetGameOwner(isGameOwner)
+	if not isGameOwner then
+		--Make all SpawnAdjusters red.
+		for _, i in CollectionService:GetTagged("SpawnAdjuster") do
+			i.Parent.BrickColor = BrickColor.Red()
+			i.Parent.Material = Enum.Material.SmoothPlastic
+		end
+
+		return
+	end
+
+	--Is game owner
+	for _, i in CollectionService:GetTagged("SpawnAdjuster") do
+		i.Parent.BrickColor = BrickColor.Green()
+		i.Parent.Material = Enum.Material.Neon
+	end
+end
+
 --Listen for server events. I'd usually use something like Comms by Sleitnick for communication, but today I'm just gonna use default Remove Events
 local Events = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events")
 
-Events:WaitForChild("Sync").OnClientEvent
-	:Connect(function(syncData: { ["Conveyor"]: Types.SerializedConveyor, ["Stockpile"]: Types.SerializedContainer })
+Events:WaitForChild("Sync").OnClientEvent:Connect(
+	function(
+		syncData: { ["Conveyor"]: Types.SerializedConveyor, ["Stockpile"]: Types.SerializedContainer },
+		gameOwnerUserId: number
+	)
 		--Would do this differently if support for multiple conveyors etc. were to be added
-
+		print(syncData)
 		if not Stockpiles[syncData.Stockpile.Id] then
 			Stockpiles[syncData.Stockpile.Id] = ClientContainer.new(
 				syncData.Stockpile.Id,
 				workspace:WaitForChild(syncData.Stockpile.Id),
 				syncData.Stockpile.Bags
 			)
+		else
+			Stockpiles[syncData.Stockpile.Id]:loadBags(syncData.Stockpile.Bags)
 		end
 
 		if not Conveyors[syncData.Conveyor.Id] then
@@ -40,8 +65,13 @@ Events:WaitForChild("Sync").OnClientEvent
 				syncData.Conveyor.Speed,
 				syncData.Conveyor.Bags
 			)
+		else
+			Conveyors[syncData.Stockpile.Id]:loadBags(syncData.Conveyor.Bags)
 		end
-	end)
+
+		SetGameOwner(gameOwnerUserId == Players.LocalPlayer.UserId)
+	end
+)
 
 Events:WaitForChild("SpawnBag").OnClientEvent:Connect(function(data: Types.SerializedBag)
 	local container = Conveyors[data.ContainerId]
@@ -69,4 +99,20 @@ Events:WaitForChild("CreateContainer").OnClientEvent:Connect(function(data: Type
 	end
 end)
 
+Events:WaitForChild("SetConveyorSpeed").OnClientEvent:Connect(function(conveyorId: string, speed: number)
+	if not Conveyors[conveyorId] then
+		return
+	end
+
+	Conveyors[conveyorId].Speed = speed
+end)
+
+Events:WaitForChild("SetGameOwner").OnClientEvent:Connect(function(gameOwnerUserId: number)
+	SetGameOwner(gameOwnerUserId == Players.LocalPlayer.UserId)
+end)
+
+repeat
+	task.wait()
+until game:IsLoaded()
+task.wait(0.25)
 Events:WaitForChild("Ready"):FireServer()
