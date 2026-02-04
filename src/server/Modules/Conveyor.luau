@@ -1,6 +1,6 @@
 local HttpService = game:GetService("HttpService")
-local Types = require("../Types")
-local Math = require("../Math")
+local Types = require(script.Parent.Parent.Types)
+local Math = require(script.Parent.Parent.Math)
 
 local Conveyor = {}
 Conveyor.__index = Conveyor
@@ -16,6 +16,8 @@ function Conveyor.new(part: BasePart, speed: number, target: Types.Container): T
 		POI = {},
 	}
 
+	part.Name = self.Id
+
 	return setmetatable(self, Conveyor) :: any
 end
 
@@ -29,7 +31,7 @@ function Conveyor.changeSpeed(self: Types.Conveyor, newSpeed: number)
 	end
 end
 
-function Conveyor.add(self: Types.Conveyor, bag: Types.Bag)
+function Conveyor.addBag(self: Types.Conveyor, bag: Types.Bag)
 	if bag.Container then
 		error("Add bag cannot add a bag that already has a container... Please move the bag instead.")
 	end
@@ -44,7 +46,7 @@ function Conveyor.add(self: Types.Conveyor, bag: Types.Bag)
 	self.BagEvents[bag] = tick() + Math.TimeRemaining(self, bag.StudsTraversed)
 end
 
-function Conveyor.remove(self: Types.Conveyor, bag: Types.Bag)
+function Conveyor.removeBag(self: Types.Conveyor, bag: Types.Bag)
 	if not bag.Container then
 		error("The given bag did not have a container")
 	end
@@ -81,12 +83,11 @@ function Conveyor.serialize(self: Types.Conveyor): Types.SerializedConveyor
 
 	return {
 		Speed = self.Speed,
-		Target = self.Target:serialize(),
+		TargetId = self.Target.Id,
 		Type = "Conveyor",
 		Id = self.Id,
 		POI = {},
 		Bags = bags,
-		Part = self.Part,
 	}
 end
 
